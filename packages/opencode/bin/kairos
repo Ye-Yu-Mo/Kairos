@@ -1,11 +1,15 @@
 #!/usr/bin/env bun
 // Kairos CLI — AI subjective trading client
-// Entry point for global install via `bun link`
+// Global install: cd packages/opencode && bun link
 
-const { $ } = await import("bun")
-const { resolve } = await import("node:path")
+import { resolve } from "node:path"
+import { chdir } from "node:process"
 
-const entry = resolve(import.meta.dirname, "..", "src", "index.ts")
+// cd to package root so all dependencies resolve
+const pkgDir = resolve(import.meta.dirname, "..")
+chdir(pkgDir)
+
+const entry = resolve(pkgDir, "src", "index.ts")
 const args = process.argv.slice(2)
-
+const { $ } = await import("bun")
 await $`bun run --conditions=browser ${entry} ${args}`.nothrow()
