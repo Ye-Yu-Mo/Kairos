@@ -32,3 +32,14 @@ UPCOMING_CHANGELOG.md
 logs/
 *.bun-build
 tsconfig.tsbuildinfo
+
+*.md
+.mcp.json
+
+# Kairos state files (auto-generated)
+.kairos/alerts.json
+.kairos/positions.json
+.kairos/top20.json
+.kairos/context.md
+.kairos/plugin.log
+.opencode/opencode.jsonc
