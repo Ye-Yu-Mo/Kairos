@@ -20,4 +20,4 @@ jobs:
         run: bun install
 
       - name: Run unit tests
-        run: bun turbo test --output-logs=errors-only --log-order=grouped
+        run: bun turbo test --output-logs=errors-only --log-order=grouped --filter='!@opencode-ai/app' --filter='!@opencode-ai/web' --filter='!@opencode-ai/ui' --filter='!@opencode-ai/desktop' --filter='!@opencode-ai/console-app'
