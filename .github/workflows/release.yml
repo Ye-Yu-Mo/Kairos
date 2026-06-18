@@ -30,7 +30,7 @@ jobs:
       - name: Build plugin
         run: bun build packages/opencode/plugins/kairos/index.ts --outdir=packages/opencode/plugins/kairos/ --target=bun
       - name: Create source tarball
-        run: tar -czf kairos.tar.gz --exclude='.git' --exclude='node_modules' --exclude='.turbo' .
+        run: tar -czf kairos.tar.gz --exclude=.git --exclude=node_modules --exclude=.turbo --warning=no-file-changed .
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
