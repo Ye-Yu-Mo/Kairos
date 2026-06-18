@@ -61,6 +61,7 @@ export interface BuildPromptInput {
   alerts: KairosAlerts | null
   top20: Top20Data | null
   contextMd: string | null
+  kairosDir: string
 }
 
 // -------------------------------------------------------
@@ -115,12 +116,15 @@ export function formatAlertsText(alerts: KairosAlerts | null): string | null {
  * 顺序: role → context → alerts → top20
  */
 export function buildSystemPrompt(input: BuildPromptInput): string {
-  const sections: string[] = [input.methodology]
+  const sections: string[] = []
 
-  // 上次交易上下文
+  // 上次交易上下文 — 最前面，AI 最先看到
   if (input.contextMd) {
-    sections.push("\n---\n## 上次交易上下文\n" + input.contextMd)
+    sections.push("## ⚠️ 上次交易上下文（来自 .kairos/context.md 完整内容，无需再读取文件）\n" + input.contextMd)
   }
+
+  // 交易方法论
+  sections.push(input.methodology)
 
   // 触发提醒
   if (input.alerts) {
@@ -134,11 +138,13 @@ export function buildSystemPrompt(input: BuildPromptInput): string {
     const header = stale ? "📊 市场快照 (⚠️ 数据可能过期):" : "📊 市场快照:"
     const body = formatMarketSnapshot(input.top20)
     if (body) {
-      // 替换默认 header 为带过期标注的版本
       const withHeader = body.replace("📊 市场快照 (Top 20):", header)
       sections.push("\n---\n" + withHeader)
     }
   }
+
+  // 文件路径提示
+  sections.push(`\n---\n## 项目文件路径\n.kairos/ 目录的绝对路径: ${input.kairosDir}`)
 
   return sections.join("\n")
 }

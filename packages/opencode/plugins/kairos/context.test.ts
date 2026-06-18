@@ -161,7 +161,7 @@ describe("buildSystemPrompt", () => {
     expect(result).toContain("过期")
   })
 
-  test("全部数据都有时组合完整，methodology 在最前", () => {
+  test("全部数据都有时组合完整，context 在最前", () => {
     const alerts = {
       updated_at: new Date().toISOString(),
       triggered: [{ id: "a1", symbol: "ETHUSDT", price: 3500, direction: "ABOVE", message: "突破", triggered_at: "" }],
@@ -183,6 +183,19 @@ describe("buildSystemPrompt", () => {
     expect(result).toContain("ETHUSDT")
     expect(result).toContain("BTCUSDT")
     expect(result).toContain("持仓: BTC 多")
-    expect(result.indexOf("You are a trader")).toBeLessThan(result.indexOf("ETHUSDT"))
+    // context 在最前面
+    expect(result.indexOf("持仓: BTC 多")).toBeLessThan(result.indexOf("You are a trader"))
+  })
+
+  test("system prompt 包含 .kairos/ 绝对路径", () => {
+    const result = buildSystemPrompt({
+      methodology: "",
+      alerts: null,
+      top20: null,
+      contextMd: null,
+      kairosDir: "/Users/jasxu/Documents/Kairos/.kairos",
+    })
+
+    expect(result).toContain("/Users/jasxu/Documents/Kairos/.kairos")
   })
 })

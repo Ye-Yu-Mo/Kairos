@@ -34,6 +34,7 @@ logs/
 tsconfig.tsbuildinfo
 
 *.md
+!main_trade/*.md
 .mcp.json
 
 # Kairos state files (auto-generated)

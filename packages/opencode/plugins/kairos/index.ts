@@ -10,9 +10,6 @@ import { resolve } from "node:path"
 import { readFileSync, existsSync } from "node:fs"
 import { composeMethodology, buildSystemPrompt, type KairosAlerts, type Top20Data } from "./context"
 
-const KAIROS_DIR = resolve(import.meta.dirname, "..", "..", "..", "..", ".kairos")
-const MAIN_TRADE_DIR = resolve(import.meta.dirname, "..", "..", "..", "..", "main_trade")
-
 function readJson(path: string): any | null {
   try {
     if (!existsSync(path)) return null
@@ -31,17 +28,36 @@ function readText(path: string): string | null {
   }
 }
 
-const server = async (_input: PluginInput, _options?: PluginOptions): Promise<Hooks> => {
-  const alertsPath = resolve(KAIROS_DIR, "alerts.json")
-  const top20Path = resolve(KAIROS_DIR, "top20.json")
-  const contextPath = resolve(KAIROS_DIR, "context.md")
+/**
+ * 向上查找包含指定子目录的根目录。
+ * 从 CWD 开始，每次向上一级，直到找到 targetDir 或到达文件系统根。
+ */
+function findProjectRoot(cwd: string, targetDir: string): string | null {
+  let dir = resolve(cwd)
+  const root = resolve("/")
+  while (dir !== root) {
+    if (existsSync(resolve(dir, targetDir))) return dir
+    dir = resolve(dir, "..")
+  }
+  return null
+}
+
+const server = async (input: PluginInput, _options?: PluginOptions): Promise<Hooks> => {
+  // 从项目目录查找 .kairos/ 和 main_trade/
+  const projectRoot = findProjectRoot(input.directory, ".kairos") || input.directory
+  const kairosDir = resolve(projectRoot, ".kairos")
+  const mainTradeDir = resolve(projectRoot, "main_trade")
+
+  const alertsPath = resolve(kairosDir, "alerts.json")
+  const top20Path = resolve(kairosDir, "top20.json")
+  const contextPath = resolve(kairosDir, "context.md")
 
   // 读取 main_trade 交易方法论
   const methodology = composeMethodology({
-    spec: readText(resolve(MAIN_TRADE_DIR, "SPEC.md")),
-    framework: readText(resolve(MAIN_TRADE_DIR, "analysis-framework.md")),
-    plan: readText(resolve(MAIN_TRADE_DIR, "trade-plan-template.md")),
-    review: readText(resolve(MAIN_TRADE_DIR, "review-template.md")),
+    spec: readText(resolve(mainTradeDir, "SPEC.md")),
+    framework: readText(resolve(mainTradeDir, "analysis-framework.md")),
+    plan: readText(resolve(mainTradeDir, "trade-plan-template.md")),
+    review: readText(resolve(mainTradeDir, "review-template.md")),
   })
 
   return {
@@ -55,6 +71,7 @@ const server = async (_input: PluginInput, _options?: PluginOptions): Promise<Ho
         alerts,
         top20,
         contextMd,
+        kairosDir,
       })
 
       output.system.unshift(prompt)
