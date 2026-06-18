@@ -29,21 +29,14 @@ Kairos 是 [OpenCode](https://github.com/anomalyco/opencode) 的 Fork，改造�
 ### 安装
 
 ```bash
-git clone https://github.com/Ye-Yu-Mo/kairos.git
-cd kairos
-bash kairos-setup.sh
-```
+# 一行安装
+curl -fsSL https://raw.githubusercontent.com/Ye-Yu-Mo/kairos/main/install | bash
 
-然后全局注册 `kairos` 命令：
+# 确保 ~/.bun/bin 在 PATH 中
+echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 
-```bash
-cd packages/opencode
-bun link
-```
-
-之后在任意目录直接启动：
-
-```bash
+# 启动
 kairos
 ```
 

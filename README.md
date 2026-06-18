@@ -29,21 +29,14 @@ It pairs with [MCP Trade Server](https://github.com/Ye-Yu-Mo/mcp_trade) (21 Bina
 ### Install
 
 ```bash
-git clone https://github.com/Ye-Yu-Mo/kairos.git
-cd kairos
-bash kairos-setup.sh
-```
+# One-liner
+curl -fsSL https://raw.githubusercontent.com/Ye-Yu-Mo/kairos/main/install | bash
 
-Global link the `kairos` command:
+# Ensure ~/.bun/bin is in PATH
+echo 'export PATH="$HOME/.bun/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 
-```bash
-cd packages/opencode
-bun link
-```
-
-Then start from any directory:
-
-```bash
+# Start
 kairos
 ```
 
