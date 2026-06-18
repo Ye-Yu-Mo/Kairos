@@ -102,7 +102,6 @@ const server = async (input: PluginInput, _options?: PluginOptions): Promise<Hoo
       const reminder = makeJournalReminder(input.tool)
       if (reminder) {
         output.output = (output.output || "") + reminder
-        try { appendFileSync("/tmp/kairos-m3.log", `[${new Date().toISOString()}] reminder injected: ${input.tool}\n`) } catch {}
       }
     },
   }

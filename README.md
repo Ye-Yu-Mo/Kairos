@@ -1,129 +1,142 @@
 <p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The open source AI coding agent.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
+  <h1>KAIROS</h1>
+  <p>AI Subjective Trading Client — Price Action, Human-in-the-Loop</p>
 </p>
 
 <p align="center">
   <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
+  <a href="README.zh.md">简体中文</a>
 </p>
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+---
+
+Kairos is a fork of [OpenCode](https://github.com/anomalyco/opencode), repurposed as an AI-assisted subjective trading client.
+
+It pairs with [MCP Trade Server](https://github.com/Ye-Yu-Mo/mcp_trade) (21 Binance futures trading tools) and comes with a built-in Price Action trading methodology. The AI analyzes, alerts, and enforces discipline. You decide and pull the trigger.
+
+**Human-in-the-loop. Risk stays with you. The AI is your trading assistant, not a trading bot.**
+
+### Why Kairos
+
+| | Raw MCP | Kairos |
+|------|---------|--------|
+| Session memory | AI forgets trades between sessions | Auto-loads context, positions, alerts |
+| Analysis method | Tell AI how to analyze every time | Built-in framework (1h structure → 15m levels → 5m signals) |
+| Trading discipline | AI forgets to journal | Auto-reminder after order/OCO/cancel |
+| Market monitoring | Manual market.watch calls | Scheduled scripts poll automatically |
+| Setup | Manual MCP config + hand-written prompts | One-click install script |
+
+### Install
+
+```bash
+git clone https://github.com/Ye-Yu-Mo/kairos.git
+cd kairos
+bash kairos-setup.sh
+```
+
+Configure your AI model (edit `.opencode/opencode.jsonc`):
+
+```json
+{
+  "model": "anthropic/your-model",
+  "provider": {
+    "anthropic": {
+      "options": {
+        "apiKey": "sk-xxx",
+        "baseURL": "https://api.deepseek.com/anthropic"
+      }
+    }
+  }
+}
+```
+
+### Quick Start
+
+```bash
+cd packages/opencode
+bun run src/index.ts
+```
+
+The AI loads your context, positions, alerts, and market snapshot automatically. Try:
+
+> "Start BTC analysis: 1h structure first"
+
+### MCP Trade Server
+
+Kairos depends on [MCP Trade Server](https://github.com/Ye-Yu-Mo/mcp_trade) for 21 trading tools:
+
+- **Market**: scanner, klines, price, orderbook, ticker, watch, funding, OI
+- **Account**: balance, positions
+- **Orders**: place, OCO, cancel, modify stop, list, status
+- **Trading**: journal, journal list, history, performance
+- **Alerts**: set/list/remove, economic calendar
+
+The two projects work best together. MCP Server provides the data pipeline. Kairos provides the analysis framework and discipline enforcement.
+
+### Trading Methodology
+
+Kairos ships with a complete Price Action framework (`main_trade/`):
+
+- `analysis-framework.md` — Market analysis: 1h structure → 15m key levels → 5m entry signals
+- `trade-plan-template.md` — Trade plan: entry, stop loss, take profit, position sizing
+- `review-template.md` — Post-trade review: 5-category attribution (A/B/C/D/E) + rule compliance
+- `SPEC.md` — Trading system specification
+
+Methodology is customizable. The AI may suggest improvements based on experience, but you have the final say on all rule changes.
+
+### Architecture
+
+```mermaid
+graph TB
+    subgraph Kairos["Kairos Client (OpenCode Fork)"]
+        S1["watch.ts<br/>Alert polling (2 min)"]
+        S2["scanner.ts<br/>Market snapshot (5 min)"]
+        P1["system.transform<br/>Inject methodology + context + alerts + snapshot"]
+        P2["tool.execute.after<br/>Journal reminder after orders<br/>Auto-sync journal → context.md"]
+
+        S1 -->|write| K[".kairos/<br/>alerts.json"]
+        S2 -->|write| K
+        K -->|read| P1
+        main_trade["main_trade/*.md<br/>Trading methodology"] -->|read| P1
+    end
+
+    Kairos -->|"MCP (stdio)"| MCP["MCP Trade Server<br/>21 trading tools"]
+    MCP -->|"HTTP API"| Exchange["Binance Futures"]
+
+    P2 -->|"auto-sync"| K
+```
+
+### Project Structure
+
+```
+kairos/
+├── packages/opencode/          # OpenCode CLI (Fork)
+│   └── plugins/kairos/        # Kairos plugin
+│       ├── index.ts           # Entry (system.transform + tool.execute.after)
+│       ├── context.ts         # System prompt builder
+│       ├── hooks.ts           # Tool interceptors
+│       └── sync.ts            # Context.md auto-sync
+├── script/                    # Scheduler scripts
+│   ├── watch.ts               # Alert polling (2 min)
+│   ├── scanner.ts             # Market snapshot (5 min)
+│   └── setup-cron.sh          # Launchd/cron installer
+├── main_trade/                # Trading methodology
+├── .kairos/                   # Runtime state (auto-generated)
+│   ├── alerts.json            # Triggered alerts
+│   ├── top20.json             # Top 20 market snapshot
+│   ├── context.md             # AI trading context
+│   └── positions.json         # Current positions
+└── .opencode/opencode.jsonc   # OpenCode config
+```
+
+### Risk Warning
+
+Kairos is an **assistive tool**, not an automated trading system. All trading decisions are your responsibility.
+
+Cryptocurrency trading carries extreme risk. Only trade with funds you can afford to lose.
 
 ---
 
-### Installation
+Built on [OpenCode](https://github.com/anomalyco/opencode). Thanks to the OpenCode team for their open-source work.
 
-```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
-
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS and Linux (recommended, always up to date)
-brew install opencode              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # Any OS
-nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev branch
-```
-
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
-
-### Desktop App (BETA)
-
-OpenCode is also available as a desktop application. Download directly from the [releases page](https://github.com/anomalyco/opencode/releases) or [opencode.ai/download](https://opencode.ai/download).
-
-| Platform              | Download                           |
-| --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
-| Linux                 | `.deb`, `.rpm`, or `.AppImage`     |
-
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
-```
-
-#### Installation Directory
-
-The install script respects the following priority order for the installation path:
-
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if it exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
-
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
-```
-
-### Agents
-
-OpenCode includes two built-in agents you can switch between with the `Tab` key.
-
-- **build** - Default, full-access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
-
-Also included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://opencode.ai/docs/agents).
-
-### Documentation
-
-For more info on how to configure OpenCode, [**head over to our docs**](https://opencode.ai/docs).
-
-### Contributing
-
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
-
-### Building on OpenCode
-
-If you are working on a project that's related to OpenCode and is using "opencode" as part of its name, for example "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in any way.
-
----
-
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+MCP Trade Server provides the trading infrastructure. Both projects are MIT licensed.

@@ -1,128 +1,142 @@
 <p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">开源的 AI Coding Agent。</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
+  <h1>KAIROS</h1>
+  <p>AI 主观交易客户端 —— 基于价格行为，人机协同</p>
 </p>
 
 <p align="center">
   <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
+  <a href="README.zh.md">简体中文</a>
 </p>
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
-
 ---
+
+Kairos 是 [OpenCode](https://github.com/anomalyco/opencode) 的 Fork，改造为一个 AI 辅助主观交易客户端。
+
+它配套 [MCP Trade Server](https://github.com/Ye-Yu-Mo/mcp_trade)（21 个 Binance 合约交易工具），内置完整的价格行为（Price Action）交易方法论。AI 负责分析、提醒、追踪纪律；你负责做决定、扣扳机。
+
+**人在回路，风险可控。AI 是交易助手，不是交易机器人。**
+
+### 为什么用 Kairos
+
+| | 直接调 MCP | 用 Kairos |
+|------|-----------|-----------|
+| 会话记忆 | 每次新对话，AI 不记得上次交易 | 自动加载上次上下文、持仓、提醒 |
+| 分析方法论 | 每次手动告诉 AI 怎么分析行情 | 内置分析框架（1h 结构 → 15m 水平 → 5m 信号） |
+| 交易纪律 | AI 容易忘记写 journal | 下单/OCO/撤单后自动强制提醒写日志 |
+| 市场监控 | 需要手动调 market.watch | 定时脚本自动轮询，触发提醒自动通知 |
+| 安装配置 | 手动配 MCP + 手写 prompt | 一键安装脚本，开箱即用 |
 
 ### 安装
 
 ```bash
-# 直接安装 (YOLO)
-curl -fsSL https://opencode.ai/install | bash
-
-# 软件包管理器
-npm i -g opencode-ai@latest        # 也可使用 bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS 和 Linux（推荐，始终保持最新）
-brew install opencode              # macOS 和 Linux（官方 brew formula，更新频率较低）
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # 任意系统
-nix run nixpkgs#opencode           # 或用 github:anomalyco/opencode 获取最新 dev 分支
+git clone https://github.com/Ye-Yu-Mo/kairos.git
+cd kairos
+bash kairos-setup.sh
 ```
 
-> [!TIP]
-> 安装前请先移除 0.1.x 之前的旧版本。
+然后配置 AI 模型（编辑 `.opencode/opencode.jsonc`）：
 
-### 桌面应用程序 (BETA)
+```json
+{
+  "model": "anthropic/deepseek-v4-flash",
+  "provider": {
+    "anthropic": {
+      "options": {
+        "apiKey": "sk-xxx",
+        "baseURL": "https://api.deepseek.com/anthropic"
+      }
+    }
+  }
+}
+```
 
-OpenCode 也提供桌面版应用。可直接从 [发布页 (releases page)](https://github.com/anomalyco/opencode/releases) 或 [opencode.ai/download](https://opencode.ai/download) 下载。
-
-| 平台                  | 下载文件                           |
-| --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
-| Linux                 | `.deb`、`.rpm` 或 AppImage         |
+### 启动
 
 ```bash
-# macOS (Homebrew Cask)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+cd packages/opencode
+bun run src/index.ts
 ```
 
-#### 安装目录
+启动后 AI 会自动分析市场、读取持仓、展示提醒。第一句话试试：
 
-安装脚本按照以下优先级决定安装路径：
+> "开始 BTC 分析流程：先看 1h 结构"
 
-1. `$OPENCODE_INSTALL_DIR` - 自定义安装目录
-2. `$XDG_BIN_DIR` - 符合 XDG 基础目录规范的路径
-3. `$HOME/bin` - 如果存在或可创建的用户二进制目录
-4. `$HOME/.opencode/bin` - 默认备用路径
+### 配套 MCP Trade Server
 
-```bash
-# 示例
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
+Kairos 依赖 [MCP Trade Server](https://github.com/Ye-Yu-Mo/mcp_trade) 提供 21 个交易工具：
+
+- **行情**：market.scanner、market.klines、market.price、market.orderbook、market.ticker、market.watch、market.funding、market.oi
+- **账户**：account.balance、account.positions
+- **订单**：order.place、order.oco、order.cancel、order.modify_stop、order.list、order.status
+- **交易**：trade.journal、trade.journal_list、trade.history、trade.performance
+- **提醒**：market.alerts、market.calendar
+
+两个项目配合使用效率最高。MCP Server 提供数据管道，Kairos 提供分析框架和纪律约束。
+
+### 交易方法论
+
+Kairos 内置完整的价格行为交易框架（`main_trade/` 目录）：
+
+- `analysis-framework.md` — 市场分析流程：1h 定结构 → 15m 找关键水平 → 5m 等入场信号
+- `trade-plan-template.md` — 交易计划模板：入场、止损、止盈、仓位计算
+- `review-template.md` — 复盘模板：五类归因（A/B/C/D/E）+ 规则遵守检查
+- `SPEC.md` — 交易系统规范
+
+方法论可根据个人风格修改。AI 会在交易中提出改进建议，但规则的最终修改权在你手里。
+
+### 架构
+
+```mermaid
+graph TB
+    subgraph Kairos["Kairos Client (OpenCode Fork)"]
+        S1["watch.ts<br/>每2分钟检查提醒"]
+        S2["scanner.ts<br/>每5分钟刷新行情"]
+        P1["system.transform<br/>注入方法论+上下文+提醒+快照"]
+        P2["tool.execute.after<br/>下单后提醒journal<br/>journal自动同步context.md"]
+
+        S1 -->|写入| K[".kairos/<br/>alerts.json"]
+        S2 -->|写入| K
+        K -->|读取| P1
+        main_trade["main_trade/*.md<br/>交易方法论"] -->|读取| P1
+    end
+
+    Kairos -->|"MCP (stdio)"| MCP["MCP Trade Server<br/>21个交易工具"]
+    MCP -->|"HTTP API"| Exchange["Binance Futures"]
+
+    P2 -->|"auto-sync"| K
 ```
 
-### Agents
+### 项目结构
 
-OpenCode 内置两种 Agent，可用 `Tab` 键快速切换：
+```
+kairos/
+├── packages/opencode/          # OpenCode CLI (Fork)
+│   └── plugins/kairos/        # Kairos 插件
+│       ├── index.ts           # 插件入口
+│       ├── context.ts         # system prompt 构建
+│       ├── hooks.ts           # 工具拦截
+│       └── sync.ts            # context.md 同步
+├── script/                    # 调度脚本
+│   ├── watch.ts               # 提醒轮询
+│   ├── scanner.ts             # 行情快照
+│   └── setup-cron.sh          # 定时任务安装
+├── main_trade/                # 交易方法论
+├── .kairos/                   # 运行时状态
+│   ├── alerts.json            # 触发提醒
+│   ├── top20.json             # 市场快照 Top 20
+│   ├── context.md             # 交易上下文
+│   └── positions.json         # 当前持仓
+└── .opencode/opencode.jsonc   # OpenCode 配置
+```
 
-- **build** - 默认模式，具备完整权限，适合开发工作
-- **plan** - 只读模式，适合代码分析与探索
-  - 默认拒绝修改文件
-  - 运行 bash 命令前会询问
-  - 便于探索未知代码库或规划改动
+### 风险提示
 
-另外还包含一个 **general** 子 Agent，用于复杂搜索和多步任务，内部使用，也可在消息中输入 `@general` 调用。
+Kairos 是辅助工具，不是自动交易系统。所有交易决策由你负责。
 
-了解更多 [Agents](https://opencode.ai/docs/agents) 相关信息。
-
-### 文档
-
-更多配置说明请查看我们的 [**官方文档**](https://opencode.ai/docs)。
-
-### 参与贡献
-
-如有兴趣贡献代码，请在提交 PR 前阅读 [贡献指南 (Contributing Docs)](./CONTRIBUTING.md)。
-
-### 基于 OpenCode 进行开发
-
-如果你在项目名中使用了 “opencode”（如 “opencode-dashboard” 或 “opencode-mobile”），请在 README 里注明该项目不是 OpenCode 团队官方开发，且不存在隶属关系。
+加密货币交易风险极高，请只用你能承受损失的资金。
 
 ---
 
-**加入我们的社区** [飞书](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=738j8655-cd59-4633-a30a-1124e0096789&qr_code=true) | [X.com](https://x.com/opencode)
+Kairos 基于 [OpenCode](https://github.com/anomalyco/opencode) 构建，感谢 OpenCode 团队的开源贡献。
+
+MCP Trade Server 提供交易基础设施。两个项目均为 MIT 协议。
