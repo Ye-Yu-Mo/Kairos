@@ -34,32 +34,20 @@ cd kairos
 bash kairos-setup.sh
 ```
 
-然后配置 AI 模型（编辑 `.opencode/opencode.jsonc`）：
-
-```json
-{
-  "model": "anthropic/deepseek-v4-flash",
-  "provider": {
-    "anthropic": {
-      "options": {
-        "apiKey": "sk-xxx",
-        "baseURL": "https://api.deepseek.com/anthropic"
-      }
-    }
-  }
-}
-```
-
-### 启动
+然后全局注册 `kairos` 命令：
 
 ```bash
 cd packages/opencode
-bun run src/index.ts
+bun link
 ```
 
-启动后 AI 会自动分析市场、读取持仓、展示提醒。第一句话试试：
+之后在任意目录直接启动：
 
-> "开始 BTC 分析流程：先看 1h 结构"
+```bash
+kairos
+```
+
+### 配置
 
 ### 配套 MCP Trade Server
 

@@ -34,32 +34,20 @@ cd kairos
 bash kairos-setup.sh
 ```
 
-Configure your AI model (edit `.opencode/opencode.jsonc`):
-
-```json
-{
-  "model": "anthropic/your-model",
-  "provider": {
-    "anthropic": {
-      "options": {
-        "apiKey": "sk-xxx",
-        "baseURL": "https://api.deepseek.com/anthropic"
-      }
-    }
-  }
-}
-```
-
-### Quick Start
+Global link the `kairos` command:
 
 ```bash
 cd packages/opencode
-bun run src/index.ts
+bun link
 ```
 
-The AI loads your context, positions, alerts, and market snapshot automatically. Try:
+Then start from any directory:
 
-> "Start BTC analysis: 1h structure first"
+```bash
+kairos
+```
+
+### Configure
 
 ### MCP Trade Server
 
