@@ -7,8 +7,10 @@
  */
 import type { Hooks, PluginInput, PluginOptions } from "@opencode-ai/plugin"
 import { resolve } from "node:path"
-import { readFileSync, existsSync } from "node:fs"
+import { readFileSync, existsSync, writeFileSync } from "node:fs"
 import { composeMethodology, buildSystemPrompt, type KairosAlerts, type Top20Data } from "./context"
+import { isOrderPlace, isOrderOco, isOrderCancel, isTradeJournal, makeJournalReminder } from "./hooks"
+import { appendJournalToContext } from "./sync"
 
 function readJson(path: string): any | null {
   try {
@@ -75,6 +77,33 @@ const server = async (input: PluginInput, _options?: PluginOptions): Promise<Hoo
       })
 
       output.system.unshift(prompt)
+    },
+
+    "tool.execute.after": async (input, output) => {
+      // 交易日志 → 自动追加到 context.md
+      if (isTradeJournal(input.tool)) {
+        const args = input.args as any
+        if (args?.entry_type === "ENTRY" || args?.reason) {
+          const entry = {
+            id: `journal_${Date.now()}`,
+            symbol: args.symbol || "unknown",
+            side: args.side || "unknown",
+            price: args.price || 0,
+            reason: args.reason || "",
+          }
+          const current = readText(contextPath)
+          const updated = appendJournalToContext(current, entry)
+          try { writeFileSync(contextPath, updated, "utf-8") } catch {}
+        }
+        return
+      }
+
+      // 入场/出场操作 → 提醒写 journal
+      const reminder = makeJournalReminder(input.tool)
+      if (reminder) {
+        output.output = (output.output || "") + reminder
+        try { appendFileSync("/tmp/kairos-m3.log", `[${new Date().toISOString()}] reminder injected: ${input.tool}\n`) } catch {}
+      }
     },
   }
 }
