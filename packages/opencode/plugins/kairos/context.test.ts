@@ -106,6 +106,7 @@ describe("buildSystemPrompt", () => {
       alerts: null,
       top20: null,
       contextMd: null,
+      kairosDir: "/test/.kairos",
     })
 
     expect(result).toContain("You are a trader")
@@ -126,6 +127,7 @@ describe("buildSystemPrompt", () => {
       alerts,
       top20: null,
       contextMd: null,
+      kairosDir: "/test/.kairos",
     })
 
     expect(result).toContain("BNBUSDT")
@@ -138,6 +140,7 @@ describe("buildSystemPrompt", () => {
       alerts: null,
       top20: null,
       contextMd: "## 当前持仓\nBTCUSDT 多单 0.01",
+      kairosDir: "/test/.kairos",
     })
 
     expect(result).toContain("BTCUSDT")
@@ -156,6 +159,7 @@ describe("buildSystemPrompt", () => {
       alerts: null,
       top20,
       contextMd: null,
+      kairosDir: "/test/.kairos",
     })
 
     expect(result).toContain("过期")
@@ -177,6 +181,7 @@ describe("buildSystemPrompt", () => {
       alerts,
       top20,
       contextMd: "持仓: BTC 多",
+      kairosDir: "/test/.kairos",
     })
 
     expect(result).toContain("You are a trader")
