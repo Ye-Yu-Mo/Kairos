@@ -66,7 +66,6 @@ describe("formatAlertsForSystem", () => {
     expect(result).toContain("做空机会")
     expect(result).toContain("BTCUSDT")
     expect(result).toContain("95000")
-    expect(result).toContain("共 3 个活跃提醒")
   })
 
   test("无触发提醒时返回 null", () => {

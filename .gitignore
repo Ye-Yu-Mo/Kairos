@@ -43,3 +43,7 @@ tsconfig.tsbuildinfo
 .kairos/context.md
 .kairos/plugin.log
 .opencode/opencode.jsonc
+
+# Kairos compiled plugins (source is .ts)
+packages/opencode/plugins/kairos/index.js
+packages/opencode/.opencode/opencode.jsonc

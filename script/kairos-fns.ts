@@ -34,7 +34,6 @@ export function formatAlertsForSystem(alerts: any): string | null {
   return [
     "🔔 以下价格提醒已触发（来自项目根目录 .kairos/alerts.json）：",
     ...lines,
-    `  （共 ${alerts.active} 个活跃提醒未触发）`,
   ].join("\n")
 }
 

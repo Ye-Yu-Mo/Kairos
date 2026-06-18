@@ -5,79 +5,67 @@
  * 运行: cd script && bun test watch.test.ts
  */
 import { describe, expect, test } from "bun:test"
-import { transformWatchResponse, safeFilename } from "./watch-fns"
+import { transformWatchResponse, safeFilename, type KairosAlerts } from "./watch-fns"
 
 describe("transformWatchResponse", () => {
-  test("有触发提醒时，返回 triggered 数组", () => {
+  test("解析 HTTP API 格式 {data: {triggered_alerts: [...]}}", () => {
     const raw = {
-      alerts: [
-        {
-          id: "alert_001",
-          symbol: "BNBUSDT",
-          price: 592.0,
-          direction: "BELOW",
-          message: "BNB 跌破 592，做空机会",
-          triggered_at: "2026-06-19T14:28:00Z",
-        },
-      ],
-      active: [
-        {
-          id: "alert_002",
-          symbol: "BTCUSDT",
-          price: 95000,
-          direction: "ABOVE",
-          message: "BTC 突破 95000 做多",
-        },
+      data: {
+        triggered_alerts: [
+          { symbol: "BNBUSDT", price: 592.0, direction: "BELOW", message: "做空机会" },
+          { symbol: "BTCUSDT", price: 95000, direction: "ABOVE", message: "突破阻力" },
+        ],
+      },
+    }
+
+    const result = transformWatchResponse(raw)
+
+    expect(result.triggered).toHaveLength(2)
+    expect(result.triggered[0].symbol).toBe("BNBUSDT")
+    expect(result.triggered[0].price).toBe(592.0)
+    expect(result.triggered[0].direction).toBe("BELOW")
+    expect(result.updated_at).toBeString()
+  })
+
+  test("解析 MCP structuredContent 格式 {triggered_alerts: [...]}", () => {
+    const raw = {
+      triggered_alerts: [
+        { symbol: "ETHUSDT", price: 3500, direction: "ABOVE", message: "突破" },
       ],
     }
 
     const result = transformWatchResponse(raw)
 
     expect(result.triggered).toHaveLength(1)
-    expect(result.triggered[0].symbol).toBe("BNBUSDT")
-    expect(result.triggered[0].price).toBe(592.0)
-    expect(result.active).toBe(1)
-    expect(result.updated_at).toBeString()
+    expect(result.triggered[0].symbol).toBe("ETHUSDT")
   })
 
-  test("无触发提醒时，triggered 为空数组", () => {
+  test("null 的 triggered_alerts 转为空数组", () => {
     const raw = {
-      alerts: [],
-      active: [
-        {
-          id: "alert_003",
-          symbol: "ETHUSDT",
-          price: 3500,
-          direction: "ABOVE",
-          message: "ETH 突破",
-        },
-      ],
+      data: {
+        triggered_alerts: null,
+      },
     }
 
     const result = transformWatchResponse(raw)
 
     expect(result.triggered).toEqual([])
-    expect(result.active).toBe(1)
   })
 
-  test("全部为空时，返回空结果", () => {
+  test("无触发提醒时返回空数组", () => {
     const raw = {
-      alerts: [],
-      active: [],
+      data: {
+        triggered_alerts: [],
+      },
     }
 
     const result = transformWatchResponse(raw)
 
     expect(result.triggered).toEqual([])
-    expect(result.active).toBe(0)
   })
 
-  test("缺少 alerts 字段时抛出错误", () => {
-    const raw = {
-      active: [],
-    } as any
-
-    expect(() => transformWatchResponse(raw)).toThrow()
+  test("raw 为 null 时抛出错误", () => {
+    expect(() => transformWatchResponse(null)).toThrow()
   })
 })
 

@@ -1,58 +1,49 @@
 /**
  * Kairos watch 纯函数。
- * 不依赖任何外部包，可安全单元测试。
+ * 解析 market.watch API 响应，提取触发提醒。
  */
-
-interface McpWatchResponse {
-  alerts?: Array<{
-    id: string
-    symbol: string
-    price: number
-    direction: string
-    message: string
-    triggered_at?: string
-  }>
-  active?: Array<{
-    id: string
-    symbol: string
-    price: number
-    direction: string
-    message: string
-  }>
-}
 
 export interface KairosAlerts {
   updated_at: string
   triggered: Array<{
-    id: string
     symbol: string
     price: number
     direction: string
     message: string
-    triggered_at: string
   }>
-  active: number
+}
+
+interface WatchData {
+  triggered_alerts?: Array<{
+    symbol: string
+    price: number
+    direction: string
+    message: string
+  }> | null
 }
 
 /**
- * 将 MCP market_watch 原始响应转换为 .kairos/alerts.json 格式。
+ * 将 market.watch API 原始响应转换为 .kairos/alerts.json 格式。
+ * 支持两种包裹格式: {data: {...}} (HTTP) 或直接 {...} (MCP structuredContent)
  */
-export function transformWatchResponse(raw: McpWatchResponse): KairosAlerts {
-  if (!raw || !Array.isArray(raw.alerts)) {
-    throw new Error("Invalid MCP response: missing alerts array")
+export function transformWatchResponse(raw: { data?: WatchData; triggered_alerts?: any } | null): KairosAlerts {
+  if (!raw) throw new Error("Invalid MCP response: null")
+
+  const data = raw.data || raw
+  const triggered = data.triggered_alerts || []
+
+  if (!Array.isArray(triggered)) {
+    throw new Error("Invalid MCP response: triggered_alerts is not an array")
   }
 
   return {
     updated_at: new Date().toISOString(),
-    triggered: (raw.alerts || []).map((a) => ({
-      id: a.id,
+    triggered: triggered.map((a: any) => ({
       symbol: a.symbol,
       price: a.price,
       direction: a.direction,
-      message: a.message,
-      triggered_at: a.triggered_at || new Date().toISOString(),
+      message: a.message || "",
     })),
-    active: (raw.active || []).length,
   }
 }
 
