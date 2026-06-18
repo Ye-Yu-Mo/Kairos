@@ -45,10 +45,12 @@ function findProjectRoot(cwd: string, targetDir: string): string | null {
 }
 
 const server = async (input: PluginInput, _options?: PluginOptions): Promise<Hooks> => {
-  // 从项目目录查找 .kairos/ 和 main_trade/
+  // .kairos/ — 从 CWD 向上查找（用户项目目录）
   const projectRoot = findProjectRoot(input.directory, ".kairos") || input.directory
   const kairosDir = resolve(projectRoot, ".kairos")
-  const mainTradeDir = resolve(projectRoot, "main_trade")
+
+  // main_trade/ — 相对插件自身位置（随 binary 发布）
+  const mainTradeDir = resolve(import.meta.dirname, "..", "..", "main_trade")
 
   const alertsPath = resolve(kairosDir, "alerts.json")
   const top20Path = resolve(kairosDir, "top20.json")
